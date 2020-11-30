@@ -5,6 +5,7 @@ SECTION .text
 
 mov ax, 0xB800
 mov ds, ax
+
 mov byte [0x00], 'M'
 mov byte [0x01], 0x4A
 

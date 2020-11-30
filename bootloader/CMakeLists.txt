@@ -1,6 +1,6 @@
-find_package(Nasm REQUIRED)
-if(NASM_FOUND)
-    message(STATUS "Found Nasm ${NASM_VERSION_STRING} to build assembly primitives")
+find_package(nasm REQUIRED)
+if(nasm_FOUND)
+    message(STATUS "Found nasm ${NASM_VERSION_STRING} to build assembly primitives")
 endif()
 
 set(ASM_SRC ${CMAKE_CURRENT_SOURCE_DIR}/BootLoader.asm)
