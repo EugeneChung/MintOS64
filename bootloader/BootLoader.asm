@@ -102,7 +102,7 @@ READ_DATA:
 READ_END:
     push LOADING_COMPLETE_MESSAGE
     push 1
-    push 20
+    push 4
     call FUNC_PRINT_MESSAGE
     add sp, 6
 
@@ -185,7 +185,7 @@ FUNC_PRINT_MESSAGE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 WELCOME_MESSAGE:               db  'Mint64 OS Boot Loader', 0
 IMAGE_LOADING_MESSAGE:         db  0
-LOADING_COMPLETE_MESSAGE:      db  0
+LOADING_COMPLETE_MESSAGE:      db  'OS Image Loaded', 0
 DISK_RESET_ERROR_MESSAGE:      db  'Disk Reset Error', 0
 DISK_READ_PARAM_ERROR_MESSAGE: db  'Disk Read Parameters Error', 0
 DISK_READ_ERROR_MESSAGE:       db  'Disk Read Sector Error', 0
