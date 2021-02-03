@@ -3,7 +3,7 @@ if(nasm_FOUND)
     message(STATUS "Found nasm ${NASM_VERSION_STRING} to build assembly primitives")
 endif()
 
-set(ENTRYPOINT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/EntryPoint.s)
+set(ENTRYPOINT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/EntryPoint.asm)
 
 add_custom_command(
         OUTPUT ${ENTRYPOINT_BIN}
