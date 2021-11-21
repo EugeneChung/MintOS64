@@ -5,6 +5,8 @@ SECTION .text
 
 jmp 0x07C0:START   ; set the boot loader starting address to CS register (0x07C0 * 0x10 = 0x7C00)
 
+TOTALSECTORCOUNT: dw 1146 ; the size of the kernel image (boot loader itself is not included)
+
 START:
     mov ax, cs
     mov ds, ax     ; set the boot loader starting address to DS register
@@ -53,10 +55,10 @@ RESET_DISK:
     mov dl, byte [BOOT_DRIVE]
     int 0x13
     jc HANDLE_DISK_READ_PARAM_ERROR
-    mov byte [LAST_HEAD], dh       ; for floppy disk, 1
+    mov byte [LAST_HEAD], dh        ; for floppy disk, 1
     mov al, cl
     and al, 0x3f                    ; take sector information (& 0b00111111)
-    mov byte [LAST_SECTOR], al     ; for floppy disk, 18
+    mov byte [LAST_SECTOR], al      ; for floppy disk, 18
     mov byte [LAST_TRACK], ch
 
     ; Let's load the OS image from disk
@@ -64,7 +66,7 @@ RESET_DISK:
     mov es, si
     mov bx, 0x0000
 
-    mov di, 1146                    ; to read 1146 sectors of disk
+    mov di, word [TOTALSECTORCOUNT] ; to read the defined sectors of disk
 
 READ_DATA:
     cmp di, 0
@@ -86,16 +88,16 @@ READ_DATA:
     mov al, byte [SECTOR_NUMBER]
     add al, 0x01
     mov byte [SECTOR_NUMBER], al
-    cmp al, byte [LAST_SECTOR]     ; check if it read the last sector of the track
+    cmp al, byte [LAST_SECTOR]      ; check if it read the last sector of the track
     jle READ_DATA
 
-    add byte [HEAD_NUMBER], 0x01   ; set the current head as 1 and reset the current sector
+    add byte [HEAD_NUMBER], 0x01    ; set the current head as 1 and reset the current sector
     mov byte [SECTOR_NUMBER], 0x01
     mov al, byte [LAST_HEAD]
-    cmp byte [HEAD_NUMBER], al     ; check if it's the last head
+    cmp byte [HEAD_NUMBER], al      ; check if it's the last head
     jle READ_DATA
 
-    mov byte [HEAD_NUMBER], 0x00   ; reset the current head and move to the next track
+    mov byte [HEAD_NUMBER], 0x00    ; reset the current head and move to the next track
     add byte [TRACK_NUMBER], 0x01
     jmp READ_DATA
 
