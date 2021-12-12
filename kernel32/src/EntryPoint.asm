@@ -35,11 +35,11 @@ PROTECTED_MODE:
 
     push (SWITCH_SUCCESS_MESSAGE - $$ + 0x10000)
     push 2
-    push 4
+    push 0
     call FUNC_PRINT_MESSAGE
     add esp, 12
 
-    jmp $
+    jmp dword 0x08: 0x10200 ; jump to the kernel with setting CS register to 0x08(kernel code segment)
 
 ; function FUNC_PRINT_MESSAGE(x, y, message) for 32bits
 FUNC_PRINT_MESSAGE:
