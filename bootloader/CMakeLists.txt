@@ -20,8 +20,7 @@ add_custom_command(
         COMMENT "Creating ${TEST_OS_IMAGE_BIN}")
 add_custom_target(
         BootLoader ALL
-        DEPENDS ${BOOTLOADER_BIN} ${TEST_OS_IMAGE_BIN}
-        VERBATIM)
+        DEPENDS ${BOOTLOADER_BIN} ${TEST_OS_IMAGE_BIN})
 add_custom_command(
         TARGET BootLoader POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E cat
