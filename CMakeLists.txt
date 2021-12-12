@@ -10,6 +10,7 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR})
 set(MINTOS64_IMAGE MintOS64Disk.img)
 set(BOOTLOADER_BIN BootLoader.bin)
 set(KERNEL32_BIN kernel32.bin)
+set(IMAGE_MAKER_BIN mkimage)
 set(X64_PC_LINUX_GCC /usr/local/cross/bin/x86_64-pc-linux-gcc)
 set(X64_PC_LINUX_LD /usr/local/cross/bin/x86_64-pc-linux-ld)
 set(X64_PC_LINUX_OBJCOPY /usr/local/cross/bin/x86_64-pc-linux-objcopy)
@@ -19,7 +20,7 @@ add_subdirectory(kernel32)
 add_subdirectory(utility)
 
 add_custom_target(Kernel ALL VERBATIM)
-add_dependencies(Kernel BootLoader EntryPoint Kernel32)
+add_dependencies(Kernel BootLoader EntryPoint Kernel32 ImageMaker)
 add_custom_command(
         TARGET Kernel POST_BUILD
         COMMAND utility/image_maker/mkimage -o ${PROJECT_BINARY_DIR}/${MINTOS64_IMAGE}
