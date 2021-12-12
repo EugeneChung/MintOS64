@@ -13,7 +13,7 @@ void kprint_string(int x, int y, const char *string) {
     int i;
 
     screen += 80 * y + x;
-    for (i = 0; *string != '\0'; i++) {
+    for (i = 0; string[i] != '\0'; i++) {
         screen[i].value = string[i];
     }
 }
