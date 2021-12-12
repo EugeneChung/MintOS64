@@ -125,4 +125,4 @@ GDT_END:
 
 SWITCH_SUCCESS_MESSAGE: db 'Switched To Protected Mode', 0
 
-times 510 - ($ - $$) db 0x00
+times 512 - ($ - $$) db 0x00
