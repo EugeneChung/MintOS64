@@ -8,6 +8,21 @@ START:
     mov ds, ax          ; set the entry point address of protected mode (0x1000 * 0x10 = 0x10000)
     mov es, ax
 
+    ; Activate A20 gate through BIOS
+    mov ax, 0x2401
+    int 0x15
+
+    jc .A20GATEERROR
+    jmp .A20GATESUCCESS
+
+.A20GATEERROR:
+    ; Activate A20 gate through I/O port
+    in al, 0x92
+    or al, 0x02
+    and al, 0xFE
+    out 0x92, al
+
+.A20GATESUCCESS:
     cli                 ; block interrupt and set GDTR
     lgdt [GDTR]
     mov eax, 0x4000003B ; Diable Paging/Cache, Internal FPU, Diable Align Check
