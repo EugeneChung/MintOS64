@@ -16,23 +16,22 @@
 
 #define BYTES_OF_SECTOR  512
 
-int adjust_in_sector_size(int fd, int source_size);
-
-void update_bootloader_sector_count(int fd, int kernel32_sector_count);
-
-int copy_file(int source_fd, int target_fd);
+static int adjust_in_sector_size(int fd, int source_size);
+static void update_bootloader_sector_count(int fd, int total_sector_count, int kernel32_sector_count);
+static int copy_file(int source_fd, int target_fd);
 
 int main(int argc, char *argv[]) {
     int source_fd;
     int target_fd;
     int bootloader_size;
     int kernel32_sector_count;
+    int kernel64_sector_count;
     int source_size;
     int c;
     char *output_file = NULL;
 
-    if (argc < 3) {
-        fprintf(stderr, "[usage] mkimage -o MintOS64Disk.img BootLoader.bin kernel32.bin\n");
+    if (argc < 4) {
+        fprintf(stderr, "[usage] mkimage -o MintOS64Disk.img BootLoader.bin kernel32.bin kernel64.bin\n");
         exit(-1);
     }
 
@@ -86,11 +85,27 @@ int main(int argc, char *argv[]) {
     kernel32_sector_count = adjust_in_sector_size(target_fd, source_size);
     printf("[INFO] %s size = [%d] and sector count = [%d]\n",
            argv[optind], source_size, kernel32_sector_count);
+    optind++;
+
+    // 64비트 커널 파일을 열어서 모든 내용을 디스크 이미지 파일로 복사
+    printf("[INFO] Copy IA-32e mode kernel to %s\n", output_file);
+    if ((source_fd = open(argv[optind], O_RDONLY)) == -1) {
+        fprintf(stderr, "[ERROR] %s open fail\n", argv[optind]);
+        exit(1);
+    }
+
+    source_size = copy_file(source_fd, target_fd);
+    close(source_fd);
+
+    // 파일 크기를 섹터 크기인 512바이트로 맞추기 위해 나머지 부분을 0x00 으로 채움
+    kernel64_sector_count = adjust_in_sector_size(target_fd, source_size);
+    printf("[INFO] %s size = [%d] and sector count = [%d]\n",
+           argv[optind], source_size, kernel64_sector_count);
 
     // 디스크 이미지에 커널 정보를 갱신
-    printf("[INFO] Starting to update the count of kernel32 sectors\n");
+    printf("[INFO] Starting to update the count of kernel image sectors\n");
     // 부트섹터의 5번째 바이트부터 커널에 대한 정보를 넣음
-    update_bootloader_sector_count(target_fd, kernel32_sector_count);
+    update_bootloader_sector_count(target_fd, kernel32_sector_count + kernel64_sector_count, kernel32_sector_count);
     printf("[INFO] Disk image %s creation completed\n", output_file);
 
     close(target_fd);
@@ -125,7 +140,7 @@ int adjust_in_sector_size(int fd, int source_size) {
 /**
  * 부트 로더에 커널에 대한 정보를 삽입
  */
-void update_bootloader_sector_count(int fd, int kernel32_sector_count) {
+void update_bootloader_sector_count(int fd, int total_sector_count, int kernel32_sector_count) {
     unsigned short data;
     long pos;
 
@@ -137,10 +152,13 @@ void update_bootloader_sector_count(int fd, int kernel32_sector_count) {
     }
 
     // 부트 로더를 제외한 총 섹터 수 및 보호 모드 커널의 섹터 수 저장
+    data = (unsigned short) total_sector_count;
+    write(fd, &data, 2);
     data = (unsigned short) kernel32_sector_count;
     write(fd, &data, 2);
 
-    printf("[INFO] Total sector count of protected mode kernel [%d]\n", kernel32_sector_count);
+    printf("[INFO] The sector count of kernel image [%d]\n", total_sector_count);
+    printf("[INFO] The sector count of protected mode kernel image [%d]\n", kernel32_sector_count);
 }
 
 /**

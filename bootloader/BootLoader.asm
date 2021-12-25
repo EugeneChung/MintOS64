@@ -5,7 +5,8 @@ SECTION .text
 
 jmp 0x07C0:START   ; set the boot loader starting address to CS register (0x07C0 * 0x10 = 0x7C00)
 
-TOTALSECTORCOUNT: dw 1146 ; the size of the kernel image (boot loader itself is not included)
+TOTALSECTORCOUNT: dw 1146    ; the size of total kernel image (boot loader itself is not included)
+KERNEL32SECTORCOUNT: dw 0x02 ; the size of the kernel32 image
 
 START:
     mov ax, cs

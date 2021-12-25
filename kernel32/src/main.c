@@ -1,27 +1,52 @@
-#include "types.h"
+#include "page.h"
+#include "mode_switch.h"
 
 void kprint_string(int x, int y, const char *string);
 BOOL kis_memory_enough();
 BOOL kinit_kernel64_area();
+void kprepare_kernel64_image();
 
-int main(void) {
-    kprint_string(0, 3, "Protected Mode C Language Kernel Start......[Pass]");
+int main() {
+    int line = 3;
+    DWORD eax, ebx, ecx, edx;
+    char cpu_vendor[13] = {0, };
 
-    kprint_string(0, 4, "Minimum Memory Size Check...................[    ]");
+    kprint_string(0, line++, "Protected Mode C Language Kernel Start......[Pass]");
+
+    kprint_string(0, line, "Minimum Memory Size Check...................[    ]");
     if (kis_memory_enough()) {
-        kprint_string(45, 4, "Pass");
+        kprint_string(45, line++, "Pass");
     } else {
-        kprint_string(45, 4, "Fail");
+        kprint_string(45, line++, "Fail");
         while (1);
     }
 
-    kprint_string(0, 5, "IA-32e Kernel Area Initialize...............[    ]");
+    kprint_string(0, line, "IA-32e Kernel Area Initialize...............[    ]");
     if (kinit_kernel64_area()) {
-        kprint_string(45, 5, "Pass");
+        kprint_string(45, line++, "Pass");
     } else {
-        kprint_string(45, 5, "Fail");
+        kprint_string(45, line++, "Fail");
         while (1);
     }
+
+    kprint_string(0, line, "IA-32e Page Table Initialize................[    ]");
+    kinit_page_tables();
+    kprint_string(45, line++, "Pass");
+
+    kread_cpuid(0, &eax, &ebx, &ecx, &edx);
+    *((DWORD *)cpu_vendor) = ebx;
+    *((DWORD *)cpu_vendor + 1) = edx;
+    *((DWORD *)cpu_vendor + 2) = ecx;
+    cpu_vendor[12] = '\0';
+    kprint_string(0, line, "CPU Vendor.......................[               ]");
+    kprint_string(34, line++, cpu_vendor);
+
+    kprint_string(0, line, "Prepare IA-32e Kernel Image.................[    ]");
+    kprepare_kernel64_image();
+    kprint_string(45, line++, "Pass");
+
+    kprint_string(0, line, "Switching to IA-32e Mode..........................");
+    kswitch_to_ia32e();
 
     while (1);
     return 0;
@@ -72,4 +97,24 @@ BOOL kinit_kernel64_area() {
     }
 
     return TRUE;
+}
+
+void kprepare_kernel64_image() {
+    WORD total_sector_count, kernel32_sector_count, total_word_count;
+    DWORD *src_addr, *dest_addr;
+    int i;
+
+    // get the number of sectors from defined memory address set by bootloader
+    total_sector_count = *((WORD *) 0x7C05);
+    kernel32_sector_count = *((WORD *) 0x7C07);
+
+    // copy kernel64 image from bootloader location to kernel64 location at the address 0x200000
+    src_addr = (DWORD *)(0x10000 + (kernel32_sector_count * 512));
+    dest_addr = (DWORD *) 0x200000;
+    total_word_count = 512 * (total_sector_count - kernel32_sector_count) / 4;
+    for (i = 0; i < total_word_count; i++) {
+        *dest_addr = *src_addr;
+        dest_addr++;
+        src_addr++;
+    }
 }
