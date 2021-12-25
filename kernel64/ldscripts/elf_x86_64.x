@@ -1,19 +1,18 @@
-/* Default linker script, for normal executables */
+/* Default linker script, for normal executables from gcc 11.2.0 */
 /* Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Copying and distribution of this script, with or without modification,
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.  */
-OUTPUT_FORMAT("elf32-i386", "elf32-i386",
-	      "elf32-i386")
-OUTPUT_ARCH(i386)
+OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64",
+	      "elf64-x86-64")
+OUTPUT_ARCH(i386:x86-64)
 ENTRY(_start)
-SEARCH_DIR("/usr/local/cross/x86_64-pc-linux/lib");
+SEARCH_DIR("/usr/local/cross/x86_64-pc-linux/lib64"); SEARCH_DIR("/usr/local/cross/x86_64-pc-linux/lib");
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */
-  PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x08048000)); . = SEGMENT_START("text-segment", 0x08048000) + SIZEOF_HEADERS;
-/*************************************************/
-  .text 0x10200   :
+  PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x400000)); . = SEGMENT_START("text-segment", 0x400000) + SIZEOF_HEADERS;
+  .text 0x200000  :
   {
     *(.text.unlikely .text.*_unlikely .text.unlikely.*)
     *(.text.exit .text.exit.*)
@@ -23,7 +22,14 @@ SECTIONS
     *(.text .stub .text.* .gnu.linkonce.t.*)
     /* .gnu.warning sections are handled specially by elf.em.  */
     *(.gnu.warning)
-  } =0x90909090
+  }
+  .fini           :
+  {
+    KEEP (*(SORT_NONE(.fini)))
+  }
+  PROVIDE (__etext = .);
+  PROVIDE (_etext = .);
+  PROVIDE (etext = .);
   .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) }
   .rodata1        : { *(.rodata1) }
   . = ALIGN (512);
@@ -45,13 +51,8 @@ SECTIONS
       .bss section disappears because there are no input sections.
       FIXME: Why do we need it? When there is no .bss section, we do not
       pad the .data section.  */
-   . = ALIGN(. != 0 ? 32 / 8 : 1);
+   . = ALIGN(. != 0 ? 64 / 8 : 1);
   }
-  . = ALIGN(32 / 8);
-  . = SEGMENT_START("ldata-segment", .);
-  . = ALIGN(32 / 8);
-  _end = .; PROVIDE (end = .);
-/*************************************************/
   .interp         : { *(.interp) }
   .note.gnu.build-id  : { *(.note.gnu.build-id) }
   .hash           : { *(.hash) }
@@ -61,25 +62,28 @@ SECTIONS
   .gnu.version    : { *(.gnu.version) }
   .gnu.version_d  : { *(.gnu.version_d) }
   .gnu.version_r  : { *(.gnu.version_r) }
-  .rel.init       : { *(.rel.init) }
-  .rel.text       : { *(.rel.text .rel.text.* .rel.gnu.linkonce.t.*) }
-  .rel.fini       : { *(.rel.fini) }
-  .rel.rodata     : { *(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*) }
-  .rel.data.rel.ro   : { *(.rel.data.rel.ro .rel.data.rel.ro.* .rel.gnu.linkonce.d.rel.ro.*) }
-  .rel.data       : { *(.rel.data .rel.data.* .rel.gnu.linkonce.d.*) }
-  .rel.tdata	  : { *(.rel.tdata .rel.tdata.* .rel.gnu.linkonce.td.*) }
-  .rel.tbss	  : { *(.rel.tbss .rel.tbss.* .rel.gnu.linkonce.tb.*) }
-  .rel.ctors      : { *(.rel.ctors) }
-  .rel.dtors      : { *(.rel.dtors) }
-  .rel.got        : { *(.rel.got) }
-  .rel.bss        : { *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*) }
-  .rel.ifunc      : { *(.rel.ifunc) }
-  .rel.plt        :
+  .rela.init      : { *(.rela.init) }
+  .rela.text      : { *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*) }
+  .rela.fini      : { *(.rela.fini) }
+  .rela.rodata    : { *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*) }
+  .rela.data.rel.ro   : { *(.rela.data.rel.ro .rela.data.rel.ro.* .rela.gnu.linkonce.d.rel.ro.*) }
+  .rela.data      : { *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*) }
+  .rela.tdata	  : { *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*) }
+  .rela.tbss	  : { *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*) }
+  .rela.ctors     : { *(.rela.ctors) }
+  .rela.dtors     : { *(.rela.dtors) }
+  .rela.got       : { *(.rela.got) }
+  .rela.bss       : { *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*) }
+  .rela.ldata     : { *(.rela.ldata .rela.ldata.* .rela.gnu.linkonce.l.*) }
+  .rela.lbss      : { *(.rela.lbss .rela.lbss.* .rela.gnu.linkonce.lb.*) }
+  .rela.lrodata   : { *(.rela.lrodata .rela.lrodata.* .rela.gnu.linkonce.lr.*) }
+  .rela.ifunc     : { *(.rela.ifunc) }
+  .rela.plt       :
     {
-      *(.rel.plt)
-      PROVIDE_HIDDEN (__rel_iplt_start = .);
-      *(.rel.iplt)
-      PROVIDE_HIDDEN (__rel_iplt_end = .);
+      *(.rela.plt)
+      PROVIDE_HIDDEN (__rela_iplt_start = .);
+      *(.rela.iplt)
+      PROVIDE_HIDDEN (__rela_iplt_end = .);
     }
   .init           :
   {
@@ -88,13 +92,27 @@ SECTIONS
   .plt            : { *(.plt) *(.iplt) }
 .plt.got        : { *(.plt.got) }
 .plt.sec        : { *(.plt.sec) }
-  .fini           :
-  {
-    KEEP (*(SORT_NONE(.fini)))
-  }
-  PROVIDE (__etext = .);
-  PROVIDE (_etext = .);
-  PROVIDE (etext = .);
+  .eh_frame_hdr   : { *(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*) }
+  .eh_frame       : ONLY_IF_RO { KEEP (*(.eh_frame)) *(.eh_frame.*) }
+  .gcc_except_table   : ONLY_IF_RO { *(.gcc_except_table .gcc_except_table.*) }
+  .gnu_extab   : ONLY_IF_RO { *(.gnu_extab*) }
+  /* These sections are generated by the Sun/Oracle C++ compiler.  */
+  .exception_ranges   : ONLY_IF_RO { *(.exception_ranges*) }
+  /* Adjust the address for the data segment.  We want to adjust up to
+     the same address within the page on the next page up.  */
+  . = DATA_SEGMENT_ALIGN (CONSTANT (MAXPAGESIZE), CONSTANT (COMMONPAGESIZE));
+  /* Exception handling  */
+  .eh_frame       : ONLY_IF_RW { KEEP (*(.eh_frame)) *(.eh_frame.*) }
+  .gnu_extab      : ONLY_IF_RW { *(.gnu_extab) }
+  .gcc_except_table   : ONLY_IF_RW { *(.gcc_except_table .gcc_except_table.*) }
+  .exception_ranges   : ONLY_IF_RW { *(.exception_ranges*) }
+  /* Thread Local Storage sections  */
+  .tdata	  :
+   {
+     PROVIDE_HIDDEN (__tdata_start = .);
+     *(.tdata .tdata.* .gnu.linkonce.td.*)
+   }
+  .tbss		  : { *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon) }
   .preinit_array    :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -115,14 +133,6 @@ SECTIONS
     KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
     PROVIDE_HIDDEN (__fini_array_end = .);
   }
-  _edata = .; PROVIDE (edata = .);
-  /* Thread Local Storage sections  */
-  .tdata	      :
-   {
-     PROVIDE_HIDDEN (__tdata_start = .);
-     *(.tdata .tdata.* .gnu.linkonce.td.*)
-   }
-  .tbss		      : { *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon) }
   .ctors          :
   {
     /* gcc uses crtbegin.o to find the start of
@@ -156,22 +166,29 @@ SECTIONS
   .data.rel.ro : { *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*) }
   .dynamic        : { *(.dynamic) }
   .got            : { *(.got) *(.igot) }
+  . = DATA_SEGMENT_RELRO_END (SIZEOF (.got.plt) >= 24 ? 24 : 0, .);
   .got.plt        : { *(.got.plt) *(.igot.plt) }
-/*************************************************/
-  .eh_frame_hdr   : { *(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*) }
-  .eh_frame       : ONLY_IF_RO { KEEP (*(.eh_frame)) *(.eh_frame.*) }
-  .gcc_except_table   : ONLY_IF_RO { *(.gcc_except_table .gcc_except_table.*) }
-  .gnu_extab   : ONLY_IF_RO { *(.gnu_extab*) }
-  /* These sections are generated by the Sun/Oracle C++ compiler.  */
-  .exception_ranges   : ONLY_IF_RO { *(.exception_ranges*) }
-  /* Adjust the address for the data segment.  We want to adjust up to
-     the same address within the page on the next page up.  */
-  /* Exception handling  */
-  .eh_frame       : ONLY_IF_RW { KEEP (*(.eh_frame)) *(.eh_frame.*) }
-  .gnu_extab      : ONLY_IF_RW { *(.gnu_extab) }
-  .gcc_except_table   : ONLY_IF_RW { *(.gcc_except_table .gcc_except_table.*) }
-  .exception_ranges   : ONLY_IF_RW { *(.exception_ranges*) }
-/*************************************************/
+  _edata = .; PROVIDE (edata = .);
+  .lbss   :
+  {
+    *(.dynlbss)
+    *(.lbss .lbss.* .gnu.linkonce.lb.*)
+    *(LARGE_COMMON)
+  }
+  . = ALIGN(64 / 8);
+  . = SEGMENT_START("ldata-segment", .);
+  .lrodata   ALIGN(CONSTANT (MAXPAGESIZE)) + (. & (CONSTANT (MAXPAGESIZE) - 1)) :
+  {
+    *(.lrodata .lrodata.* .gnu.linkonce.lr.*)
+  }
+  .ldata   ALIGN(CONSTANT (MAXPAGESIZE)) + (. & (CONSTANT (MAXPAGESIZE) - 1)) :
+  {
+    *(.ldata .ldata.* .gnu.linkonce.l.*)
+    . = ALIGN(. != 0 ? 64 / 8 : 1);
+  }
+  . = ALIGN(64 / 8);
+  _end = .; PROVIDE (end = .);
+  . = DATA_SEGMENT_END (.);
   /* Stabs debugging sections.  */
   .stab          0 : { *(.stab) }
   .stabstr       0 : { *(.stabstr) }

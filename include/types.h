@@ -1,5 +1,5 @@
 /**
- *  file    Types.h
+ *  file    types.h
  *  date    2008/12/14
  *  author  kkamagui
  *          Copyright(c)2008 All rights reserved by kkamagui
