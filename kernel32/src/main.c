@@ -2,13 +2,13 @@
 #include "mode_switch.h"
 
 void kprint_string(int x, int y, const char *string);
-BOOL kis_memory_enough();
-BOOL kinit_kernel64_area();
+kbool_t kis_memory_enough();
+kbool_t kinit_kernel64_area();
 void kprepare_kernel64_image();
 
 int main() {
     int line = 3;
-    DWORD eax, ebx, ecx, edx;
+    kdword_t eax, ebx, ecx, edx;
     char cpu_vendor[13] = {0, };
 
     kprint_string(0, line++, "Protected Mode C Language Kernel Start......[Pass]");
@@ -34,9 +34,9 @@ int main() {
     kprint_string(45, line++, "Pass");
 
     kread_cpuid(0, &eax, &ebx, &ecx, &edx);
-    *((DWORD *)cpu_vendor) = ebx;
-    *((DWORD *)cpu_vendor + 1) = edx;
-    *((DWORD *)cpu_vendor + 2) = ecx;
+    *((kdword_t *)cpu_vendor) = ebx;
+    *((kdword_t *)cpu_vendor + 1) = edx;
+    *((kdword_t *)cpu_vendor + 2) = ecx;
     cpu_vendor[12] = '\0';
     kprint_string(0, line, "CPU Vendor.......................[               ]");
     kprint_string(34, line++, cpu_vendor);
@@ -62,11 +62,11 @@ void kprint_string(int x, int y, const char *string) {
     }
 }
 
-BOOL kis_memory_enough() {
-    DWORD *curr_address = (DWORD *) 0x100000;
+kbool_t kis_memory_enough() {
+    kdword_t *curr_address = (kdword_t *) 0x100000;
 
     // 0x4000000 = 64MB
-    while ((DWORD)curr_address < 0x4000000) {
+    while ((kdword_t)curr_address < 0x4000000) {
         *curr_address = 0x12345678;
 
         // 0으로 저장한 후 다시 읽었을 때 0이 나오지 않으면 해당 어드레스를
@@ -81,10 +81,10 @@ BOOL kis_memory_enough() {
     return TRUE;
 }
 
-BOOL kinit_kernel64_area() {
-    DWORD *curr_address = (DWORD *) 0x100000;
+kbool_t kinit_kernel64_area() {
+    kdword_t *curr_address = (kdword_t *) 0x100000;
 
-    while ((DWORD)curr_address < 0x600000) {
+    while ((kdword_t)curr_address < 0x600000) {
         *curr_address = 0x00;
 
         // 0으로 저장한 후 다시 읽었을 때 0이 나오지 않으면 해당 어드레스를
@@ -100,17 +100,17 @@ BOOL kinit_kernel64_area() {
 }
 
 void kprepare_kernel64_image() {
-    WORD total_sector_count, kernel32_sector_count, total_word_count;
-    DWORD *src_addr, *dest_addr;
+    kword_t total_sector_count, kernel32_sector_count, total_word_count;
+    kdword_t *src_addr, *dest_addr;
     int i;
 
     // get the number of sectors from defined memory address set by bootloader
-    total_sector_count = *((WORD *) 0x7C05);
-    kernel32_sector_count = *((WORD *) 0x7C07);
+    total_sector_count = *((kword_t *) 0x7C05);
+    kernel32_sector_count = *((kword_t *) 0x7C07);
 
     // copy kernel64 image from bootloader location to kernel64 location at the address 0x200000
-    src_addr = (DWORD *)(0x10000 + (kernel32_sector_count * 512));
-    dest_addr = (DWORD *) 0x200000;
+    src_addr = (kdword_t *)(0x10000 + (kernel32_sector_count * 512));
+    dest_addr = (kdword_t *) 0x200000;
     total_word_count = 512 * (total_sector_count - kernel32_sector_count) / 4;
     for (i = 0; i < total_word_count; i++) {
         *dest_addr = *src_addr;

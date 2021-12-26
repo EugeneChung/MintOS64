@@ -40,15 +40,15 @@ typedef struct kpage_tentry {
     // PDE의 경우
     // 1 비트 P, RW, US, PWT, PCD, A, D, 1, G, 3 비트 Avail, 1 비트 PAT, 8 비트 Avail,
     // 11 비트 Base Address
-    DWORD lower;
+    kdword_t lower;
     // 8 비트 Upper BaseAddress, 12 비트 Reserved, 11 비트 Avail, 1 비트 EXB
-    DWORD upper;
+    kdword_t upper;
 } kpml4_tentry_t, kpage_dirptr_tentry_t, kpage_dir_entry_t, kpage_tentry_t;
 
 #pragma pack(pop)
 
 void kinit_page_tables();
-void kfill_page_entry(kpage_tentry_t *entry, DWORD lower_base_addr, DWORD lower_flags, DWORD upper_base_addr,
-                      DWORD upper_flags);
+void kfill_page_entry(kpage_tentry_t *entry, kdword_t lower_base_addr, kdword_t lower_flags, kdword_t upper_base_addr,
+                      kdword_t upper_flags);
 
 #endif //MINTOS64_PAGE_H

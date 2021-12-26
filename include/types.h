@@ -9,11 +9,11 @@
 #ifndef MINTOS64_TYPES_H
 #define MINTOS64_TYPES_H
 
-#define BYTE unsigned char
-#define WORD unsigned short
-#define DWORD unsigned int
-#define QWORD unsigned long
-#define BOOL unsigned char
+#define kbyte_t unsigned char
+#define kword_t unsigned short
+#define kdword_t unsigned int
+#define kqword_t unsigned long
+#define kbool_t unsigned char
 
 #define TRUE 1
 #define FALSE 0
@@ -23,8 +23,8 @@
 
 // 비디오 모드 중 텍스트 모드 화면을 구성하는 자료구조
 typedef struct kvideo_char {
-    BYTE value;
-    BYTE attribute;
+    kbyte_t value;
+    kbyte_t attribute;
 } kvideo_char_t;
 
 #pragma pack(pop)
