@@ -12,8 +12,8 @@ void kinit_page_tables() {
     kpml4_tentry_t *pml4_tentry;
     kpage_dirptr_tentry_t *page_dirptr_tentry;
     kpage_dir_entry_t *page_dir_entry;
-    DWORD mapping_addr;
-    DWORD page_entry_flags;
+    kdword_t mapping_addr;
+    kdword_t page_entry_flags;
     int i;
 
     // PML4 테이블 생성
@@ -55,8 +55,8 @@ void kinit_page_tables() {
     }
 }
 
-void kfill_page_entry(kpage_tentry_t *entry, DWORD lower_base_addr, DWORD lower_flags, DWORD upper_base_addr,
-                      DWORD upper_flags) {
+void kfill_page_entry(kpage_tentry_t *entry, kdword_t lower_base_addr, kdword_t lower_flags, kdword_t upper_base_addr,
+                      kdword_t upper_flags) {
     entry->lower = lower_base_addr | lower_flags;
     entry->upper = (upper_base_addr & 0xff) | upper_flags;
 }

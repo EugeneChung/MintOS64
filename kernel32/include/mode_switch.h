@@ -11,7 +11,7 @@
 
 #include "types.h"
 
-void _KREAD_CPUID(DWORD eax, DWORD *peax, DWORD *pebx, DWORD *pecx, DWORD *pedx);
+void _KREAD_CPUID(kdword_t eax, kdword_t *peax, kdword_t *pebx, kdword_t *pecx, kdword_t *pedx);
 #define kread_cpuid _KREAD_CPUID
 
 void _KSWITCH_TO_IA32E();

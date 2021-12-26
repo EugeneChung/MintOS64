@@ -12,7 +12,7 @@ global _KREAD_CPUID, _KSWITCH_TO_IA32E
 SECTION .text
 
 ; Return CPUID information
-;   PARAM: DWORD eax, DWORD *peax, DWORD *pebx, DWORD *pecx, DWORD *pedx
+;   PARAM: kdword_t eax, kdword_t *peax, kdword_t *pebx, kdword_t *pecx, kdword_t *pedx
 _KREAD_CPUID:
     push ebp
     mov ebp, esp
