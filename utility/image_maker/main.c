@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    if ((target_fd = open(output_file, O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE)) == -1) {
+    if ((target_fd = open(output_file, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR)) == -1) {
         fprintf(stderr, "[ERROR] %s open fail.\n", output_file);
         exit(1);
     }
